@@ -76,7 +76,7 @@ def draw_sine_wave():
     amp=int(Amp_value.get())
     Offset=int(Offset_value.get())
     print(amp)
-    amplitude = 100*amp/20 # Frequency of the sine wave
+    amplitude = 100*amp/45# Frequency of the sine wave
     frequency = 0.05*(freq)/20 # Frequency of the sine wave
     offset = canvas.winfo_height() // 2
     widht=canvas.winfo_width() 
