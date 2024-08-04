@@ -1,8 +1,101 @@
 import tkinter as tk
 import math
 import random
-
-
+def functset():
+    string=textbox.get("1.0", tk.END).strip()
+    function.set(string)
+    print(function.get())
+    draw_sine_wave()
+def parsefunction(x,numeroPontos):
+    n=[]
+    amp=0
+    openbrackets=False
+    sum=False
+    offset=""
+    freq=0
+    for i in range(len(x)):
+        cahr =x[i]
+        if x[i].isnumeric() and openbrackets==False:
+            if amp!=0:
+                amp=(10*amp)+int(x[i])
+                if x[i-2]=="-":
+                    amp=amp*-1
+            else:
+                amp=int(x[i])
+                if i!=0:
+                    if x[i-1]=="-" and x[i+1].isnumeric()!=True:
+                        amp=amp*-1
+        elif x[i]=="c":
+            if amp==0:
+                amp=1
+            function="cos"
+        elif x[i]=="e":
+            if amp==0:
+                amp=1
+            function="sen"
+        elif x[i]=="(":
+            openbrackets=True
+        elif x[i]==")" and i!=len(x)-1:
+            if freq==0:
+                freq=1
+            openbrackets=False
+            sum=False
+        elif x[i]=="p":
+            if x[i-1].isnumeric():
+                offset=3.14*int(x[i-1])
+            else:
+                offset=3.14
+        elif x[i].isnumeric()==True and openbrackets==True and (x[i+1]=="x"):
+            if freq!=0:
+                freq=(10*offset)+int(x[i])
+            else:
+                freq=int(x[i])
+        elif x[i]=='+' and openbrackets==True:
+            sum=True
+        elif x[i].isnumeric()==True and sum==True:
+            if offset=="":
+                offset=int(x[i])
+            else:
+                offset=(10*offset)+int(x[i])
+        elif( (x[i]=="+" or x[i]=="-") and openbrackets==False) or (i==(len(x)-1)):
+            if freq==0:
+                freq=1
+            n.append({"amp":amp,"freq":freq,"offset":offset,"function":function})
+            num=0
+            amp=0
+            openbrackets=False
+            sum=False
+            offset=""
+            freq=0
+    wave=functionvalue(x=numeroPontos,function=n)
+    return wave
+def num(x,function):
+    table=[]
+    for i in range(x):
+        if function["offset"]=="":
+            function["offset"]=0
+        if function["function"]=="cos":
+            y=math.cos((i*function["freq"]/20)+function["offset"])*function["amp"]/10
+            table.append(y)
+        else:
+            y=math.sin((i*function["freq"]/20)+function["offset"])*function["amp"]/10
+            table.append(y)
+    return table    
+def functionvalue(x,function):
+    Table=[]
+    results=[]
+    result=0
+    Results=[]
+    for i in range(len(function)):
+        table=num(x,function=function[i])
+        Table.append(table)
+    for i in range(x):
+        for j in range(len(Table)):
+            result=Table[j][i]+result
+        results.append(result)
+    for i in range(len(results)):
+        Results.append(results[i])
+    return Results
 def update_Freq(value):
     """ Update the label with the current slider  """
     Freq_var.set(f"Frequencia")
@@ -13,13 +106,11 @@ def update_Amp(value):
     Amp_var.set(f"Amplitude")
     Amp_value.set(value)
     draw_sine_wave()
-
 def update_Offset(value):
     """ Update the label with the current slider  """
     Offset_var.set(f"offset")
     Offset_value.set(value)
     draw_sine_wave()
-
 def draw_center_lines():
     # Get the current width and height of the canvas
     canvas_width = canvas.winfo_width()
@@ -34,8 +125,6 @@ def draw_center_lines():
     
     # Draw the vertical center line
     canvas.create_line(center_x, 0, center_x, canvas_height, fill='black', width=2,tags="center_lines")
-
-    
 def on_resize(event):
     # Get the new width and height of the canvas
     canvas_width = root.winfo_width()
@@ -49,6 +138,7 @@ def on_resize(event):
     canvas.delete("center_lines")
     canvas.delete("text")
     draw_center_lines()
+    #sliders
     slider_length = canvas_width * 0.2  # Slider length as a fraction of the canvas width
     sliderFreq.config(length=int(slider_length))
     sliderFreq_x = ((canvas_width) // 2)+10
@@ -67,15 +157,16 @@ def on_resize(event):
     sliderFreq_y = 20  
     slideOffset.place(x=sliderFreq_x, y=sliderFreq_y+140)
     Offset.place(x=sliderFreq_x, y=sliderFreq_y+125) 
-    
-    canvas.create_text(sliderFreq_x+15, sliderFreq_y - 15,text="Noise",font=("Helvetica", min(canvas_width, canvas_height) // 1000),fill="black",tags="text")
+    #button
+    textbox.place(x=sliderFreq_x,y=sliderFreq_y+190)
+    sendButton.place(x=sliderFreq_x,y=sliderFreq_y+220)
 
+    canvas.create_text(sliderFreq_x+15, sliderFreq_y - 15,text="Noise",font=("Helvetica", min(canvas_width, canvas_height) // 1000),fill="black",tags="text")
 def draw_sine_wave():
     canvas.delete("lines")
     freq=int(Freq_value.get())
     amp=int(Amp_value.get())
     Offset=int(Offset_value.get())
-    print(amp)
     amplitude = 100*amp/45# Frequency of the sine wave
     frequency = 0.05*(freq)/20 # Frequency of the sine wave
     offset = canvas.winfo_height() // 2
@@ -95,9 +186,7 @@ def draw_sine_wave():
     
     # Flatten the list of points into a single list of coordinates
     noise = [coord for point in points for coord in point]
-    
-    amplitude = 100 # Amplitude of the sine wave
-    frequency = 0.1  # Frequency of the sine wave
+       # Draw the sine wave 
     offset = canvas.winfo_height() // 2
     widht=canvas.winfo_width() 
     if offset==0:
@@ -105,13 +194,15 @@ def draw_sine_wave():
         widht=150
     Wave = []
     WaveAmp=[]
+    primalWave=parsefunction(x=function.get(),numeroPontos=int ((widht/2)-50,))  
     for x in range(int ((widht/2)-50)):
-        y = ((amplitude * math.sin(frequency * x)*canvas.winfo_height()/1000 + offset))+canvas.winfo_height()/5
-        waveamp=(amplitude * math.sin(frequency * x))
+        y = ((primalWave[x]*canvas.winfo_height()/1000 + offset))+canvas.winfo_height()/5
+        waveamp=(primalWave[x])
         WaveAmp.append(waveamp)
         n=x+10
         Wave.append((n, y))
-    
+
+  
     # Flatten the list of points into a single list of coordinates
     wave = [coord for point in Wave for coord in point]
 
@@ -121,6 +212,7 @@ def draw_sine_wave():
     if offset==0:
         offset=200
         widht=150
+
     for x in range(int((len(wave))/2)):
         y = ((NoiseAmp[x]+WaveAmp[x])*canvas.winfo_height()/2000 + offset)+canvas.winfo_height()/5
 
@@ -129,7 +221,7 @@ def draw_sine_wave():
     
     # Flatten the list of points into a single list of coordinates
     reciever = [coord for point in reciever for coord in point]
-    # Draw the sine wave
+
     canvas.create_line(noise, fill='blue', smooth=True,tags="lines")
     canvas.create_line(wave, fill='blue', smooth=True,tags="lines")
     canvas.create_line(reciever, fill='blue', smooth=True,tags="lines")
@@ -175,6 +267,9 @@ Offset.place(x=(canvas.winfo_width()/2)+100, y=20)
 Amp_value=tk.DoubleVar()
 Freq_value=tk.DoubleVar()
 Offset_value=tk.DoubleVar()
+function=tk.StringVar()
+textbox=tk.Text(width=30,height=1)
+sendButton=tk.Button(text="send",command=functset)
 draw_center_lines()
 update_time()
 
