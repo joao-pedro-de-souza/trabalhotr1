@@ -1,8 +1,4 @@
-Sure, I can help you create a `README.md` for your project. Here’s a template based on the code you provided. This will give users an overview of your project, how to run it, and what each part of the code does.
-
----
-
-# Sine Wave Generator with Tkinter
+# Wave Generator with Tkinter
 
 This project is a graphical application built with Python's Tkinter library to visualize sine waves and allow user interaction through various controls. It demonstrates the use of sliders, text boxes, and dropdown menus to manipulate and display sine wave functions and bitstream data.
 
