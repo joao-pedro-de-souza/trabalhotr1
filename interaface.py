@@ -3,14 +3,16 @@ import math
 import random
 def functset():
     string=textbox.get("1.0", tk.END).strip()
-    function.set(string)
-    print(function.get())
+    Noisefunction.set(string)
+    print(Noisefunction.get())
+    noise_type.set(False)
     draw_sine_wave()
 def parsefunction(x,numeroPontos):
     n=[]
     amp=0
     openbrackets=False
     sum=False
+    alredy=False
     offset=""
     freq=0
     for i in range(len(x)):
@@ -40,16 +42,19 @@ def parsefunction(x,numeroPontos):
                 freq=1
             openbrackets=False
             sum=False
+            alredy=False
         elif x[i]=="p":
             if x[i-1].isnumeric():
                 offset=3.14*int(x[i-1])
             else:
                 offset=3.14
-        elif x[i].isnumeric()==True and openbrackets==True and (x[i+1]=="x"):
-            if freq!=0:
-                freq=(10*offset)+int(x[i])
-            else:
-                freq=int(x[i])
+        elif x[i].isnumeric()==True and openbrackets==True and (x[i+1]=="x" or x[i+1].isnumeric() )and alredy==False and sum==False:
+            j=1
+            freq=int(x[i])
+            while x[i+j].isnumeric() :
+                alredy=True
+                freq=freq*10+int(x[i+j])
+                j=j+1
         elif x[i]=='+' and openbrackets==True:
             sum=True
         elif x[i].isnumeric()==True and sum==True:
@@ -67,6 +72,7 @@ def parsefunction(x,numeroPontos):
             sum=False
             offset=""
             freq=0
+    print(n)
     wave=functionvalue(x=numeroPontos,function=n)
     return wave
 def num(x,function):
@@ -75,10 +81,11 @@ def num(x,function):
         if function["offset"]=="":
             function["offset"]=0
         if function["function"]=="cos":
-            y=math.cos((i*function["freq"]/20)+function["offset"])*function["amp"]/10
+            y=math.cos((i*function["freq"]/100)+function["offset"])*function["amp"]*10
+
             table.append(y)
         else:
-            y=math.sin((i*function["freq"]/20)+function["offset"])*function["amp"]/10
+            y=math.sin((i*function["freq"]/100)+function["offset"])*function["amp"]*10
             table.append(y)
     return table    
 def functionvalue(x,function):
@@ -90,9 +97,12 @@ def functionvalue(x,function):
         table=num(x,function=function[i])
         Table.append(table)
     for i in range(x):
+        result=0
         for j in range(len(Table)):
+
             result=Table[j][i]+result
         results.append(result)
+        
     for i in range(len(results)):
         Results.append(results[i])
     return Results
@@ -100,16 +110,19 @@ def update_Freq(value):
     """ Update the label with the current slider  """
     Freq_var.set(f"Frequencia")
     Freq_value.set(value)
+    noise_type.set(True)
     draw_sine_wave()
 def update_Amp(value):
     """ Update the label with the current slider  """
     Amp_var.set(f"Amplitude")
     Amp_value.set(value)
+    noise_type.set(True)
     draw_sine_wave()
 def update_Offset(value):
     """ Update the label with the current slider  """
     Offset_var.set(f"offset")
     Offset_value.set(value)
+    noise_type.set(True)
     draw_sine_wave()
 def draw_center_lines():
     # Get the current width and height of the canvas
@@ -164,44 +177,46 @@ def on_resize(event):
     canvas.create_text(sliderFreq_x+15, sliderFreq_y - 15,text="Noise",font=("Helvetica", min(canvas_width, canvas_height) // 1000),fill="black",tags="text")
 def draw_sine_wave():
     canvas.delete("lines")
-    freq=int(Freq_value.get())
-    amp=int(Amp_value.get())
-    Offset=int(Offset_value.get())
-    amplitude = 100*amp/45# Frequency of the sine wave
-    frequency = 0.05*(freq)/20 # Frequency of the sine wave
-    offset = canvas.winfo_height() // 2
-    widht=canvas.winfo_width() 
-    if offset==0:
-        offset=200
-        widht=150
-    points = []
-    NoiseAmp=[]
-    for x in range(int ((widht/2)-50)):
-        rand=10 * random.random()
-        y = (amplitude * math.sin((frequency * (x))+Offset)*canvas.winfo_height()/1000 + offset + rand)-canvas.winfo_height()/4
-        n=x+10
-        noiseamp=(amplitude * math.sin((frequency * (x))+Offset)+rand)
-        NoiseAmp.append(noiseamp)
-        points.append((n, y))
-    
+    if noise_type.get()==True:
+        freq=int(Freq_value.get())
+        amp=int(Amp_value.get())
+        Offset=int(Offset_value.get())
+        amplitude = 100*amp/45# Frequency of the sine wave
+        frequency = 0.05*(freq)/20 # Frequency of the sine wave
+        offset = canvas.winfo_height() // 2
+        widht=canvas.winfo_width() 
+        if offset==0:
+            offset=200
+            widht=150
+        points = []
+        NoiseAmp=[]
+        for x in range(int ((widht/2)-50)):
+            rand=10 * random.random()
+            y = (amplitude * math.sin((frequency * (x))+Offset)*canvas.winfo_height()/1000 + offset + rand)-canvas.winfo_height()/4
+            n=x+10
+            noiseamp=(amplitude * math.sin((frequency * (x))+Offset)+rand)
+            NoiseAmp.append(noiseamp)
+            points.append((n, y))
+    else:
+        offset = canvas.winfo_height() // 2
+        widht=canvas.winfo_width() 
+        if offset==0:
+            offset=200
+            widht=150
+        points = []
+        NoiseAmp=[]
+        primalWave=parsefunction(x=Noisefunction.get(),numeroPontos=int ((widht/2)-50,))  
+        for x in range((int ((widht/2)-50))):
+                y = ((primalWave[x]*canvas.winfo_height()/1000 + offset))-canvas.winfo_height()/4
+                noiseamp=(primalWave[x])
+                NoiseAmp.append(noiseamp)
+                n=(x+10)
+                points.append((n, y))
     # Flatten the list of points into a single list of coordinates
-    noise = [coord for point in points for coord in point]
+#    noise = [coord for point in points for coord in point]
        # Draw the sine wave 
-    offset = canvas.winfo_height() // 2
-    widht=canvas.winfo_width() 
-    if offset==0:
-        offset=200
-        widht=150
-    Wave = []
-    WaveAmp=[]
-    primalWave=parsefunction(x=function.get(),numeroPontos=int ((widht/2)-50,))  
-    for x in range(int ((widht/2)-50)):
-        y = ((primalWave[x]*canvas.winfo_height()/1000 + offset))+canvas.winfo_height()/5
-        waveamp=(primalWave[x])
-        WaveAmp.append(waveamp)
-        n=x+10
-        Wave.append((n, y))
 
+    Wave=[]
   
     # Flatten the list of points into a single list of coordinates
     wave = [coord for point in Wave for coord in point]
@@ -222,9 +237,9 @@ def draw_sine_wave():
     # Flatten the list of points into a single list of coordinates
     reciever = [coord for point in reciever for coord in point]
 
-    canvas.create_line(noise, fill='blue', smooth=True,tags="lines")
-    canvas.create_line(wave, fill='blue', smooth=True,tags="lines")
-    canvas.create_line(reciever, fill='blue', smooth=True,tags="lines")
+    canvas.create_line(points, fill='blue', smooth=True,tags="lines")
+#   canvas.create_line(wave, fill='blue', smooth=True,tags="lines")
+#    canvas.create_line(reciever, fill='blue', smooth=True,tags="lines")
 def update_time():
     draw_sine_wave()
 
@@ -267,9 +282,17 @@ Offset.place(x=(canvas.winfo_width()/2)+100, y=20)
 Amp_value=tk.DoubleVar()
 Freq_value=tk.DoubleVar()
 Offset_value=tk.DoubleVar()
-function=tk.StringVar()
+##Creating the box for the noise function
+Noisefunction=tk.StringVar()
 textbox=tk.Text(width=30,height=1)
 sendButton=tk.Button(text="send",command=functset)
+noise_type=tk.BooleanVar()
+noise_type.set(True)
+## Creating the bitstream typing 
+Bitstream=tk.StringVar()
+Bitstream_textBox=tk.Text()
+Bitstream_sendButton=tk.Button()
+##Creating the selectors da camada fisica
 draw_center_lines()
 update_time()
 
