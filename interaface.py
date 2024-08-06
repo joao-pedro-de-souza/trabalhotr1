@@ -1,12 +1,47 @@
 import tkinter as tk
+from tkinter import ttk
 import math
 import random
+#Event Handlers
+##selection box Event Handlers
+def on_selectFisica(event):
+    fisica_item.set( CamadaFisicaSelector.get())
+    CamadaEnlaceSelector.set("Select an option")
+
+def on_selectEnlace(event):
+    Enlace_item.set(CamadaEnlaceSelector.get())
+    CamadaFisicaSelector.set("Select an option")
+
+##Text box send Handlers
+def bitstram_set():
+    Bitstream.set(str(Bitstream_textBox.get("1.0", tk.END).strip()))
 def functset():
     string=textbox.get("1.0", tk.END).strip()
     Noisefunction.set(string)
-    print(Noisefunction.get())
     noise_type.set(False)
     draw_sine_wave()
+
+##Noise Sliders Handler
+def update_Freq(value):
+    """ Update the label with the current slider  """
+    Freq_var.set(f"Frequencia")
+    Freq_value.set(value)
+    noise_type.set(True)
+    draw_sine_wave()
+def update_Amp(value):
+    """ Update the label with the current slider  """
+    Amp_var.set(f"Amplitude")
+    Amp_value.set(value)
+    noise_type.set(True)
+    draw_sine_wave()
+def update_Offset(value):
+    """ Update the label with the current slider  """
+    Offset_var.set(f"offset")
+    Offset_value.set(value)
+    noise_type.set(True)
+    draw_sine_wave()
+    
+##Parse function to numbers
 def parsefunction(x,numeroPontos):
     n=[]
     amp=0
@@ -106,38 +141,7 @@ def functionvalue(x,function):
     for i in range(len(results)):
         Results.append(results[i])
     return Results
-def update_Freq(value):
-    """ Update the label with the current slider  """
-    Freq_var.set(f"Frequencia")
-    Freq_value.set(value)
-    noise_type.set(True)
-    draw_sine_wave()
-def update_Amp(value):
-    """ Update the label with the current slider  """
-    Amp_var.set(f"Amplitude")
-    Amp_value.set(value)
-    noise_type.set(True)
-    draw_sine_wave()
-def update_Offset(value):
-    """ Update the label with the current slider  """
-    Offset_var.set(f"offset")
-    Offset_value.set(value)
-    noise_type.set(True)
-    draw_sine_wave()
-def draw_center_lines():
-    # Get the current width and height of the canvas
-    canvas_width = canvas.winfo_width()
-    canvas_height = canvas.winfo_height()
-    
-    # Calculate the center of the canvas
-    center_x = canvas_width // 2
-    center_y = canvas_height // 2
-    
-    # Draw the horizontal center line
-    canvas.create_line(0, center_y, canvas_width, center_y, fill='black', width=2,tags="center_lines")
-    
-    # Draw the vertical center line
-    canvas.create_line(center_x, 0, center_x, canvas_height, fill='black', width=2,tags="center_lines")
+## Resize Event Handlers
 def on_resize(event):
     # Get the new width and height of the canvas
     canvas_width = root.winfo_width()
@@ -170,11 +174,36 @@ def on_resize(event):
     sliderFreq_y = 20  
     slideOffset.place(x=sliderFreq_x, y=sliderFreq_y+140)
     Offset.place(x=sliderFreq_x, y=sliderFreq_y+125) 
-    #button
+    #noise send button
     textbox.place(x=sliderFreq_x,y=sliderFreq_y+190)
     sendButton.place(x=sliderFreq_x,y=sliderFreq_y+220)
+    #bitstream box and buton placing
+    Bitstream_textBox.place(x=(sliderFreq_x+canvas_width/4)-35,y=20)
+    Bitstream_sendButton.place(x=(sliderFreq_x+canvas_width/4)-35,y=45)
+    # placing the option selector fisica
+    CamadaFisicaSelector.place(x=(sliderFreq_x+canvas_width/4)-35, y=sliderFreq_y +100)
+    # Placing the option selector enlace
+    CamadaEnlaceSelector.place(x=(sliderFreq_x+canvas_width/4)-35, y=sliderFreq_y +170)
+    canvas.create_text((sliderFreq_x+canvas_width/4)+50, sliderFreq_y +80,text="opções de camada fisica",font=("Helvetica", min(canvas_width, canvas_height) // 1000),fill="black",tags="text")
+    canvas.create_text((sliderFreq_x+canvas_width/4)+55, sliderFreq_y +150,text="opções de camada enlace",font=("Helvetica", min(canvas_width, canvas_height) // 1000),fill="black",tags="text")
+    canvas.create_text(sliderFreq_x+canvas_width/4, sliderFreq_y - 10,text="Bitstream",font=("Helvetica", min(canvas_width, canvas_height) // 1000),fill="black",tags="text")
+    canvas.create_text(sliderFreq_x+15, sliderFreq_y - 10,text="Noise",font=("Helvetica", min(canvas_width, canvas_height) // 1000),fill="black",tags="text")
 
-    canvas.create_text(sliderFreq_x+15, sliderFreq_y - 15,text="Noise",font=("Helvetica", min(canvas_width, canvas_height) // 1000),fill="black",tags="text")
+#Drawin on Canvas
+def draw_center_lines():
+    # Get the current width and height of the canvas
+    canvas_width = canvas.winfo_width()
+    canvas_height = canvas.winfo_height()
+    
+    # Calculate the center of the canvas
+    center_x = canvas_width // 2
+    center_y = canvas_height // 2
+    
+    # Draw the horizontal center line
+    canvas.create_line(0, center_y, canvas_width, center_y, fill='black', width=2,tags="center_lines")
+    
+    # Draw the vertical center line
+    canvas.create_line(center_x, 0, center_x, canvas_height, fill='black', width=2,tags="center_lines")
 def draw_sine_wave():
     canvas.delete("lines")
     if noise_type.get()==True:
@@ -215,11 +244,12 @@ def draw_sine_wave():
     # Flatten the list of points into a single list of coordinates
 #    noise = [coord for point in points for coord in point]
        # Draw the sine wave 
-
-    Wave=[]
-  
+    ProtocoloCamadaFisica=CamadaFisicaSelector.get()
+    ProtocoloCamadaEnlace=CamadaEnlaceSelector.get()
+    #Wave=EmiterWave(ProtocoloCamadaEnlace,ProtocoloCamadaFisica.Bitstream.get())
+    
     # Flatten the list of points into a single list of coordinates
-    wave = [coord for point in Wave for coord in point]
+    #wave = [coord for point in Wave for coord in point]
 
     reciever = []
     offset = canvas.winfo_height() // 2
@@ -228,8 +258,8 @@ def draw_sine_wave():
         offset=200
         widht=150
 
-    for x in range(int((len(wave))/2)):
-        y = ((NoiseAmp[x]+WaveAmp[x])*canvas.winfo_height()/2000 + offset)+canvas.winfo_height()/5
+    #for x in range(int((len(wave))/2)):
+    #    y = ((NoiseAmp[x]+WaveAmp[x])*canvas.winfo_height()/2000 + offset)+canvas.winfo_height()/5
 
         n=x+10+canvas.winfo_width() // 2
         reciever.append((n, y))
@@ -238,10 +268,8 @@ def draw_sine_wave():
     reciever = [coord for point in reciever for coord in point]
 
     canvas.create_line(points, fill='blue', smooth=True,tags="lines")
-#   canvas.create_line(wave, fill='blue', smooth=True,tags="lines")
-#    canvas.create_line(reciever, fill='blue', smooth=True,tags="lines")
-def update_time():
-    draw_sine_wave()
+    #canvas.create_line(wave, fill='blue', smooth=True,tags="lines")
+    #canvas.create_line(reciever, fill='blue', smooth=True,tags="lines")
 
 
 # Create the main application window
@@ -249,7 +277,7 @@ root = tk.Tk()
 root.title("Sine Wave")
 
 # Set an initial size for the window
-root.geometry("400x300")
+root.geometry("1000x1000")
 
 # Create a canvas widget
 canvas = tk.Canvas(root, width=400, height=300, bg='white')
@@ -290,11 +318,32 @@ noise_type=tk.BooleanVar()
 noise_type.set(True)
 ## Creating the bitstream typing 
 Bitstream=tk.StringVar()
-Bitstream_textBox=tk.Text()
-Bitstream_sendButton=tk.Button()
+Bitstream_textBox=tk.Text(width=30,height=1)
+Bitstream_sendButton=tk.Button(text="send" ,command=bitstram_set)
 ##Creating the selectors da camada fisica
+# Create a dropdown menu (CamadaFisicaSelectorbox)
+options = ["select an option","NRZ-Polar", "Manchester", "Bipolar", "ASK","FSK","8-QAM"]
+CamadaFisicaSelector = ttk.Combobox(root, values=options, state='readonly')  # Set state to 'readonly'
+
+# Bind the selection event to the callback function
+CamadaFisicaSelector.bind("<<ComboboxSelected>>", on_selectFisica)
+
+# Set default value (optional)
+CamadaFisicaSelector.set("Select an option")
+#Variaveis dos tipos de protocolo
+fisica_item=tk.StringVar()
+Enlace_item=tk.StringVar()
+
+
+# Create a dropdown menu enlace
+Enlace = ["select an option","Contagem de Caracteres", "Intersecção de bytes", "Bit de paridade", "CRC","Hamming"]
+CamadaEnlaceSelector = ttk.Combobox(root, values=Enlace, state='readonly')  # Set state to 'readonly'
+CamadaEnlaceSelector.bind("<<ComboboxSelected>>", on_selectEnlace)
+CamadaEnlaceSelector.set("Select an option")
+
+
 draw_center_lines()
-update_time()
+draw_sine_wave()
 
 # Start the Tkinter event loop
 root.mainloop()
